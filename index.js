@@ -251,6 +251,17 @@ app.get("/bookings/invoice/:id", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+app.get("/packagebooking/invoice/:id", async (req, res) => {
+    try {
+        const booking = await PackageBooking.findById(req.params.id);
+        if (!booking) {
+            return res.status(404).json({ error: "Booking not found" });
+        }
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ error: "Server error" });
+    }
+});
 
 
 // Handle 404 Errors
