@@ -51,6 +51,38 @@ const bookingSchema = new mongoose.Schema({
 });
 
 const Booking = mongoose.model("Booking", bookingSchema);
+const packageBookingSchema = new mongoose.Schema({
+  package: { type: String, required: true },
+  email: { type: String, required: true },
+  contact: { type: String, required: true },
+  passenger: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const PackageBooking = mongoose.model("PackageBooking", packageBookingSchema);
+
+// **3. API Routes (Updated to /packagebookings)**
+
+// 👉 **POST API - Save Booking Data**
+app.post("/packagebookings", async (req, res) => {
+  try {
+      const newBooking = new PackageBooking(req.body);
+      await newBooking.save();
+      res.status(201).json({ message: "Booking successful!", booking: newBooking });
+  } catch (error) {
+      res.status(500).json({ error: "Failed to save booking" });
+  }
+});
+
+// 👉 **GET API - Fetch All Bookings**
+app.get("/packagebookings", async (req, res) => {
+  try {
+      const bookings = await PackageBooking.find();
+      res.status(200).json(bookings);
+  } catch (error) {
+      res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
 
 // Trip Booking
 app.post("/book", async (req, res) => {
