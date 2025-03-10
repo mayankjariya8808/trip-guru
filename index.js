@@ -52,36 +52,42 @@ const bookingSchema = new mongoose.Schema({
 
 const Booking = mongoose.model("Booking", bookingSchema);
 const packageBookingSchema = new mongoose.Schema({
-  package: { type: String, required: true },
-  email: { type: String, required: true },
-  contact: { type: String, required: true },
-  passenger: { type: Number, required: true },
-  createdAt: { type: Date, default: Date.now }
+    package: { type: String, required: true },
+    email: { type: String, required: true },
+    contact: { type: String, required: true },
+    passenger: { type: Number, required: true },
+    createdAt: { type: Date, default: Date.now }
 });
 
 const PackageBooking = mongoose.model("PackageBooking", packageBookingSchema);
 
-// **3. API Routes (Updated to /packagebookings)**
-
-// 👉 **POST API - Save Booking Data**
+// **POST API - Save Booking Data**
 app.post("/packagebookings", async (req, res) => {
-  try {
-      const newBooking = new PackageBooking(req.body);
-      await newBooking.save();
-      res.status(201).json({ message: "Booking successful!", booking: newBooking });
-  } catch (error) {
-      res.status(500).json({ error: "Failed to save booking" });
-  }
+    try {
+        const { package, email, contact, passenger } = req.body;
+        
+        if (!package || !email || !contact || !passenger) {
+            return res.status(400).json({ error: "All fields are required" });
+        }
+
+        const newBooking = new PackageBooking(req.body);
+        await newBooking.save();
+        res.status(201).json({ message: "Booking successful!", booking: newBooking });
+    } catch (error) {
+        console.error("❌ Error saving booking:", error);
+        res.status(500).json({ error: "Failed to save booking" });
+    }
 });
 
-// 👉 **GET API - Fetch All Bookings**
+// **GET API - Fetch All Bookings**
 app.get("/packagebookings", async (req, res) => {
-  try {
-      const bookings = await PackageBooking.find();
-      res.status(200).json(bookings);
-  } catch (error) {
-      res.status(500).json({ error: "Failed to fetch bookings" });
-  }
+    try {
+        const bookings = await PackageBooking.find();
+        res.status(200).json(bookings);
+    } catch (error) {
+        console.error("❌ Error fetching bookings:", error);
+        res.status(500).json({ error: "Failed to fetch bookings" });
+    }
 });
 
 // Trip Booking
