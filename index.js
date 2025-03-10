@@ -52,43 +52,80 @@ const bookingSchema = new mongoose.Schema({
 
 const Booking = mongoose.model("Booking", bookingSchema);
 const packageBookingSchema = new mongoose.Schema({
-    package: { type: String, required: true },
-    email: { type: String, required: true },
-    contact: { type: String, required: true },
-    passenger: { type: Number, required: true },
-    createdAt: { type: Date, default: Date.now }
+  package: { type: String, required: true },
+  email: { type: String, required: true },
+  contact: { type: String, required: true },
+  passenger: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now },
+  paymentAmount: { type: Number, default: 0 },
+  paymentStatus: { type: String, enum: ["pending", "paid", "failed"], default: "pending" },
 });
 
 const PackageBooking = mongoose.model("PackageBooking", packageBookingSchema);
 
-// **POST API - Save Booking Data**
+// **3. API Routes (Updated to /packagebookings)**
+
+// 👉 **POST API - Save Booking Data**
 app.post("/packagebookings", async (req, res) => {
-    try {
-        const { package, email, contact, passenger } = req.body;
-        
-        if (!package || !email || !contact || !passenger) {
-            return res.status(400).json({ error: "All fields are required" });
-        }
-
-        const newBooking = new PackageBooking(req.body);
-        await newBooking.save();
-        res.status(201).json({ message: "Booking successful!", booking: newBooking });
-    } catch (error) {
-        console.error("❌ Error saving booking:", error);
-        res.status(500).json({ error: "Failed to save booking" });
-    }
+  try {
+      const newBooking = new PackageBooking(req.body);
+      await newBooking.save();
+      res.status(201).json({ message: "Booking successful!", booking: newBooking });
+  } catch (error) {
+      res.status(500).json({ error: "Failed to save booking" });
+  }
 });
 
-// **GET API - Fetch All Bookings**
+// 👉 **GET API - Fetch All Bookings**
 app.get("/packagebookings", async (req, res) => {
-    try {
-        const bookings = await PackageBooking.find();
-        res.status(200).json(bookings);
-    } catch (error) {
-        console.error("❌ Error fetching bookings:", error);
-        res.status(500).json({ error: "Failed to fetch bookings" });
-    }
+  try {
+      const bookings = await PackageBooking.find();
+      res.status(200).json(bookings);
+  } catch (error) {
+      res.status(500).json({ error: "Failed to fetch bookings" });
+  }
 });
+// Update Package Booking
+app.put("/packagebooking/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedPackageBooking = await PackageBooking.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedPackageBooking) {
+      return res.status(404).json({ error: "Package Booking not found" });
+    }
+
+    res.status(200).json({ message: "✏️ Package Booking updated successfully", updatedPackageBooking });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+// Update Package Booking Payment Details
+app.put("/packagebooking/payment/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { paymentAmount, paymentStatus } = req.body;
+
+    const updatedPackageBooking = await PackageBooking.findByIdAndUpdate(
+      id,
+      { paymentAmount, paymentStatus },
+      { new: true }
+    );
+
+    if (!updatedPackageBooking) {
+      return res.status(404).json({ error: "Package Booking not found" });
+    }
+
+    res.status(200).json({ message: "💰 Package Booking Payment updated successfully", updatedPackageBooking });
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
 
 // Trip Booking
 app.post("/book", async (req, res) => {
