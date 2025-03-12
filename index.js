@@ -70,11 +70,48 @@ app.post("/packagebookings", async (req, res) => {
   try {
       const newBooking = new PackageBooking(req.body);
       await newBooking.save();
+
+      // Send email notification
+      sendBookingEmail(req.body);
+
       res.status(201).json({ message: "Booking successful!", booking: newBooking });
   } catch (error) {
       res.status(500).json({ error: "Failed to save booking" });
   }
 });
+
+// Function to send an email notification
+async function sendBookingEmail(bookingData) {
+  let transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+          user: "mkrajput8808@gmail.com",  // Replace with your email
+          pass: "tuzvumbizncqfiha"         // Replace with your email password
+      }
+  });
+
+  let mailOptions = {
+      from: "your-email@gmail.com",
+      to: "tripguru.agency@gmail.com",
+      subject: "New Package Booking Confirmation",
+      text: `
+          New package booking received:
+          Email: ${bookingData.email}
+          Contact No: ${bookingData.contact}
+          Package Name: ${bookingData.packageName}
+          Start Date: ${bookingData.startDate}
+          End Date: ${bookingData.endDate}
+          Number of Travelers: ${bookingData.travelers}
+      `
+  };
+
+  try {
+      await transporter.sendMail(mailOptions);
+      console.log("Booking confirmation email sent!");
+  } catch (error) {
+      console.error("Error sending email:", error);
+  }
+}
 
 // 👉 **GET API - Fetch All Bookings**
 app.get("/packagebookings", async (req, res) => {
@@ -152,6 +189,44 @@ app.post("/book", async (req, res) => {
     res.status(201).json({ message: "🎉 Booking successful!", booking: newBooking });
   } catch (error) {
     res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
+app.post("/send-notification", async (req, res) => {
+  const { adminEmail, bookingDetails } = req.body;
+
+  let transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+          user: "mkrajput8808@gmail.com",
+          pass: "tuzvumbizncqfiha" 
+      }
+  });
+
+  let mailOptions = {
+      from: "your-email@gmail.com",
+      to: adminEmail,
+      subject: "New Trip Booking Notification",
+      text: `A new booking has been made:
+      
+      Trip Type: ${bookingDetails.tripType}
+      From: ${bookingDetails.from}
+      To: ${bookingDetails.to}
+      Email: ${bookingDetails.email}
+      Contact: ${bookingDetails.contact}
+      Passengers: ${bookingDetails.passenger}
+      ${bookingDetails.tripType === "oneway" ? `Date: ${bookingDetails.date}` : `Start Date: ${bookingDetails.startDate}\nEnd Date: ${bookingDetails.endDate}`}
+      
+      Please review the booking details.`
+  };
+
+  try {
+      await transporter.sendMail(mailOptions);
+      res.json({ message: "Notification email sent successfully!" });
+  } catch (error) {
+      console.error("Error sending email:", error);
+      res.status(500).json({ message: "Failed to send email" });
   }
 });
 
