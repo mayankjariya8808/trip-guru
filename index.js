@@ -201,53 +201,46 @@ app.get("/bookings", async (req, res) => {
 });
 
 
-// Email Route
 app.post("/send-notification", async (req, res) => {
-  try {
-    const { adminEmail, bookingDetails } = req.body;
+    try {
+        const { adminEmail, bookingDetails } = req.body;
+        
+        if (!adminEmail || !bookingDetails) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
 
-    if (!adminEmail || !bookingDetails) {
-      return res.status(400).json({ message: "Missing required fields" });
+        let transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: "mkrajput8808@gmail.com",
+                pass: "tuzvumbizncqfiha"  // Ensure this is an App Password
+            }
+        });
+
+        let mailOptions = {
+            from: "mkrajput8808@gmail.com",
+            to: adminEmail,
+            subject: "New Trip Booking Notification",
+            text: `A new booking has been made:\n
+            Trip Type: ${bookingDetails.tripType}
+            From: ${bookingDetails.from}
+            To: ${bookingDetails.to}
+            Email: ${bookingDetails.email}
+            Contact: ${bookingDetails.contact}
+            Passengers: ${bookingDetails.passenger}
+            ${bookingDetails.tripType === "oneway" ? `Date: ${bookingDetails.date}` : `Start Date: ${bookingDetails.startDate}\nEnd Date: ${bookingDetails.endDate}`}
+            `
+        };
+
+        let info = await transporter.sendMail(mailOptions);
+        console.log("Email sent: ", info.response);
+        
+        res.json({ message: "Notification email sent successfully!" });
+    } catch (error) {
+        console.error("Email Sending Error: ", error);
+        res.status(500).json({ message: "Failed to send email", error: error.message });
     }
-
-    let transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS, // Use App Passwords instead of raw credentials
-      },
-    });
-
-    let mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: adminEmail,
-      subject: "New Trip Booking Notification",
-      text: `A new booking has been made:
-
-      Trip Type: ${bookingDetails.tripType}
-      From: ${bookingDetails.from}
-      To: ${bookingDetails.to}
-      Email: ${bookingDetails.email}
-      Contact: ${bookingDetails.contact}
-      Passengers: ${bookingDetails.passenger}
-      ${
-        bookingDetails.tripType === "oneway"
-          ? `Date: ${bookingDetails.date}`
-          : `Start Date: ${bookingDetails.startDate}\nEnd Date: ${bookingDetails.endDate}`
-      }
-
-      Please review the booking details.`,
-    };
-
-    await transporter.sendMail(mailOptions);
-    res.json({ message: "Notification email sent successfully!" });
-  } catch (error) {
-    console.error("Error sending email:", error);
-    res.status(500).json({ message: "Failed to send email" });
-  }
-});
-
-// Get All Bookings
+});// Get All Bookings
 app.get("/bookings", async (req, res) => {
   try {
     const bookings = await Booking.find();
