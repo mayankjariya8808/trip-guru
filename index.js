@@ -191,14 +191,7 @@ app.post("/book", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-app.get("/bookings", async (req, res) => {
-  try {
-      const bookings = await Booking.find();
-      res.status(200).json(bookings);
-  } catch (error) {
-      res.status(500).json({ error: "Failed to fetch bookings" });
-  }
-});
+
 
 
 
@@ -215,13 +208,13 @@ app.post("/send-notification", async (req, res) => {
             port: 465, // Use SSL
             secure: true, // SSL is required for port 465
             auth: {
-                user: process.env.EMAIL_USER, // Set this in .env
-                pass: process.env.EMAIL_PASS // Use an App Password
+                user: 'mkrajput8808@gmail.com', // Set this in .env
+                pass: "tuzvumbizncqfiha" // Use an App Password
             }
         });
 
         let mailOptions = {
-            from: process.env.EMAIL_USER,
+            from:"mkrajput8808@gmail.com",
             to: "mayankjariyaa@gmail.com", // Admin Email
             subject: "New Trip Booking Notification",
             text: `
