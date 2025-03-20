@@ -164,69 +164,88 @@ app.put("/packagebooking/payment/:id", async (req, res) => {
 });
 
 
-// Trip Booking Route
+// Trip Booking
 app.post("/book", async (req, res) => {
   try {
-      const { email, contact, from, to, passenger, tripType, date, startDate, endDate } = req.body;
+    const { email, contact, from, to, date, startDate, endDate, passenger, tripType } = req.body;
 
-      if (!email || !contact || !from || !to || !passenger || !tripType) {
-          return res.status(400).json({ message: "All fields are required" });
-      }
+    if (!email || !contact || !from || !to || !passenger || !tripType) {
+      return res.status(400).json({ error: "❌ Missing required fields" });
+    }
 
-      const bookingDetails = {
-          email,
-          contact,
-          from,
-          to,
-          passenger,
-          tripType,
-          date: tripType === "oneway" ? date : null,
-          startDate: tripType === "roundtrip" ? startDate : null,
-          endDate: tripType === "roundtrip" ? endDate : null,
-      };
+    const newBooking = new Booking({
+      email,
+      contact,
+      from,
+      to,
+      date: tripType === "oneway" ? date : null,
+      startDate: tripType === "roundtrip" ? startDate : null,
+      endDate: tripType === "roundtrip" ? endDate : null,
+      passenger,
+      tripType
+    });
 
-      console.log("New Booking Received:", bookingDetails);
-      
-      // Send Email Notification
-      await sendNotification("tripguru.agency@gmail.com", bookingDetails);
-
-      res.json({ message: "Booking successful and email sent!", bookingDetails });
+    await newBooking.save();
+    res.status(201).json({ message: "🎉 Booking successful!", booking: newBooking });
   } catch (error) {
-      console.error("Booking error:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+app.get("/bookings", async (req, res) => {
+  try {
+      const bookings = await Booking.find();
+      res.status(200).json(bookings);
+  } catch (error) {
+      res.status(500).json({ error: "Failed to fetch bookings" });
   }
 });
 
-// Email Notification Function
-async function sendNotification(adminEmail, bookingDetails) {
-  let transporter = nodemailer.createTransport({
+
+// Email Route
+app.post("/send-notification", async (req, res) => {
+  try {
+    const { adminEmail, bookingDetails } = req.body;
+
+    if (!adminEmail || !bookingDetails) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-      }
-  });
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS, // Use App Passwords instead of raw credentials
+      },
+    });
 
-  let mailOptions = {
+    let mailOptions = {
       from: process.env.EMAIL_USER,
       to: adminEmail,
       subject: "New Trip Booking Notification",
       text: `A new booking has been made:
-      
+
       Trip Type: ${bookingDetails.tripType}
       From: ${bookingDetails.from}
       To: ${bookingDetails.to}
       Email: ${bookingDetails.email}
       Contact: ${bookingDetails.contact}
       Passengers: ${bookingDetails.passenger}
-      ${bookingDetails.tripType === "oneway" ? `Date: ${bookingDetails.date}` : `Start Date: ${bookingDetails.startDate}\nEnd Date: ${bookingDetails.endDate}`}
-      
-      Please review the booking details.`
-  };
+      ${
+        bookingDetails.tripType === "oneway"
+          ? `Date: ${bookingDetails.date}`
+          : `Start Date: ${bookingDetails.startDate}\nEnd Date: ${bookingDetails.endDate}`
+      }
 
-  await transporter.sendMail(mailOptions);
-  console.log("Email notification sent successfully!");
-}
+      Please review the booking details.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.json({ message: "Notification email sent successfully!" });
+  } catch (error) {
+    console.error("Error sending email:", error);
+    res.status(500).json({ message: "Failed to send email" });
+  }
+});
 
 // Get All Bookings
 app.get("/bookings", async (req, res) => {
