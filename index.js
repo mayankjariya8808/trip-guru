@@ -205,24 +205,28 @@ app.get("/bookings", async (req, res) => {
 app.post("/send-notification", async (req, res) => {
     try {
         const { bookingDetails } = req.body;
-        
+
         if (!bookingDetails) {
             return res.status(400).json({ message: "Missing booking details" });
         }
 
         let transporter = nodemailer.createTransport({
-            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 465, // Use SSL
+            secure: true, // SSL is required for port 465
             auth: {
-                user: "mkrajput8808@gmail.com",
-                pass: "tuzvumbizncqfiha"  // Ensure this is an App Password
+                user: process.env.EMAIL_USER, // Set this in .env
+                pass: process.env.EMAIL_PASS // Use an App Password
             }
         });
 
         let mailOptions = {
-            from: "mkrajput8808@gmail.com",
-            to: "mayankjariyaa@gmail.com", // Set default admin email
+            from: process.env.EMAIL_USER,
+            to: "mayankjariyaa@gmail.com", // Admin Email
             subject: "New Trip Booking Notification",
-            text: `A new booking has been made:\n
+            text: `
+            A new booking has been made:
+
             Trip Type: ${bookingDetails.tripType}
             From: ${bookingDetails.from}
             To: ${bookingDetails.to}
@@ -234,11 +238,11 @@ app.post("/send-notification", async (req, res) => {
         };
 
         let info = await transporter.sendMail(mailOptions);
-        console.log("Email sent: ", info.response);
-        
+        console.log("Email sent successfully: ", info.messageId);
+
         res.json({ message: "Notification email sent successfully!" });
     } catch (error) {
-        console.error("Email Sending Error: ", error);
+        console.error("Error sending email:", error);
         res.status(500).json({ message: "Failed to send email", error: error.message });
     }
 });
