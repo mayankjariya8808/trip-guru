@@ -203,19 +203,23 @@ app.post("/send-notification", async (req, res) => {
             return res.status(400).json({ message: "Missing booking details" });
         }
 
-        let transporter = nodemailer.createTransport({
+        console.log("📩 Sending Email Notification...");
+        console.log("Received Booking Details:", bookingDetails);
+
+        // ✅ Using environment variables for security
+        const transporter = nodemailer.createTransport({
             host: "smtp.gmail.com",
-            port: 465, // Use SSL
-            secure: true, // SSL is required for port 465
+            port: 465, 
+            secure: true, 
             auth: {
-                user: 'mkrajput8808@gmail.com', // Set this in .env
-                pass: "tuzvumbizncqfiha" // Use an App Password
+                user: process.env.EMAIL_USER, 
+                pass: process.env.EMAIL_PASS
             }
         });
 
-        let mailOptions = {
-            from:"mkrajput8808@gmail.com",
-            to: "mayankjariyaa@gmail.com", // Admin Email
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: process.env.ADMIN_EMAIL, // Admin Email from .env
             subject: "New Trip Booking Notification",
             text: `
             A new booking has been made:
@@ -231,12 +235,17 @@ app.post("/send-notification", async (req, res) => {
         };
 
         let info = await transporter.sendMail(mailOptions);
-        console.log("Email sent successfully: ", info.messageId);
+        console.log("✅ Email sent successfully:", info.messageId);
 
         res.json({ message: "Notification email sent successfully!" });
+
     } catch (error) {
-        console.error("Error sending email:", error);
-        res.status(500).json({ message: "Failed to send email", error: error.message });
+        console.error("❌ Error sending email:", error);
+        res.status(500).json({ 
+            message: "Failed to send email", 
+            error: error.message, 
+            stack: error.stack 
+        });
     }
 });
 
