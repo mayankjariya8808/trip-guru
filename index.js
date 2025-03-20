@@ -100,10 +100,10 @@ async function sendBookingEmail(bookingData) {
           New package booking received:
           Email: ${bookingData.email}
           Contact No: ${bookingData.contact}
-          Package Name: ${bookingData.packageName}
-          Start Date: ${bookingData.startDate}
-          End Date: ${bookingData.endDate}
-          Number of Travelers: ${bookingData.travelers}
+          Package Name: ${bookingData.package}
+          createdAt: ${bookingData.createdAt}
+        
+          Number of Travelers: ${bookingData.passenger}
       `
   };
 
