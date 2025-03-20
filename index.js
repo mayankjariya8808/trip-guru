@@ -92,7 +92,7 @@ async function sendBookingEmail(bookingData) {
 
   let mailOptions = {
       from: "your-email@gmail.com",
-      to: "tripguru.agency@gmail.com",
+      to: "mayankjariyaa@gmail.com",
       subject: "New Package Booking Confirmation",
       text: `
           New package booking received:
@@ -337,7 +337,44 @@ app.get("/packagebooking/invoice/:id", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+// Review Schema
+const reviewSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  email: { type: String, required: true },
+  message: { type: String, required: true },
+  rating: { type: Number, required: true, min: 1, max: 5 },
+  createdAt: { type: Date, default: Date.now },
+});
 
+const Review = mongoose.model("Review", reviewSchema);
+
+// Handle Form Submission
+app.post("/submit-review", async (req, res) => {
+  try {
+    const { name, email, message, rating } = req.body;
+
+    if (!name || !email || !message || !rating) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    const newReview = new Review({ name, email, message, rating });
+    await newReview.save();
+
+    res.status(201).json({ message: "Review submitted successfully!" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// Fetch All Reviews
+app.get("/reviews", async (req, res) => {
+  try {
+    const reviews = await Review.find().sort({ createdAt: -1 });
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 // Handle 404 Errors
 app.use((req, res) => {
