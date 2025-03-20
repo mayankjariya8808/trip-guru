@@ -197,31 +197,31 @@ app.post("/book", async (req, res) => {
 
 
 
+// ✅ Email Notification Route
 app.post("/send-notification", async (req, res) => {
     try {
         const { bookingDetails } = req.body;
 
-        if (!bookingDetails) {
-            return res.status(400).json({ message: "Missing booking details" });
+        if (!bookingDetails || !bookingDetails.email) {
+            return res.status(400).json({ message: "Missing booking details or recipient email" });
         }
 
         console.log("📩 Sending Email Notification...");
         console.log("Received Booking Details:", bookingDetails);
 
-        // ✅ Using environment variables for security
+        // ✅ Nodemailer transporter with your email
         const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465, 
-            secure: true, 
+            service: "gmail",
             auth: {
-                user: process.env.EMAIL_USER, 
-                pass: process.env.EMAIL_PASS
+                user: "mkrajput8808@gmail.com",  // ✅ Your Email
+                pass: "tuzvumbizncqfiha"        // ❌ WARNING: Use environment variables instead!
             }
         });
 
+        // ✅ Email Content
         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: process.env.ADMIN_EMAIL, // Admin Email from .env
+            from: "mkrajput8808@gmail.com",  // ✅ Your Email
+            to: "mayankjariyaa@gmail.com",   // ✅ Recipient Email
             subject: "New Trip Booking Notification",
             text: `
             A new booking has been made:
@@ -236,6 +236,7 @@ app.post("/send-notification", async (req, res) => {
             `
         };
 
+        // ✅ Send Email
         let info = await transporter.sendMail(mailOptions);
         console.log("✅ Email sent successfully:", info.messageId);
 
@@ -250,7 +251,6 @@ app.post("/send-notification", async (req, res) => {
         });
     }
 });
-
 
 
 // Get All Bookings
