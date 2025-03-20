@@ -164,55 +164,51 @@ app.put("/packagebooking/payment/:id", async (req, res) => {
 });
 
 
-// Trip Booking
+// Trip Booking Route
 app.post("/book", async (req, res) => {
   try {
-    const { email, contact, from, to, date, startDate, endDate, passenger, tripType } = req.body;
+      const { email, contact, from, to, passenger, tripType, date, startDate, endDate } = req.body;
 
-    if (!email || !contact || !from || !to || !passenger || !tripType) {
-      return res.status(400).json({ error: "❌ Missing required fields" });
-    }
+      if (!email || !contact || !from || !to || !passenger || !tripType) {
+          return res.status(400).json({ message: "All fields are required" });
+      }
 
-    const newBooking = new Booking({
-      email,
-      contact,
-      from,
-      to,
-      date: tripType === "oneway" ? date : null,
-      startDate: tripType === "roundtrip" ? startDate : null,
-      endDate: tripType === "roundtrip" ? endDate : null,
-      passenger,
-      tripType
-    });
+      const bookingDetails = {
+          email,
+          contact,
+          from,
+          to,
+          passenger,
+          tripType,
+          date: tripType === "oneway" ? date : null,
+          startDate: tripType === "roundtrip" ? startDate : null,
+          endDate: tripType === "roundtrip" ? endDate : null,
+      };
 
-    await newBooking.save();
-    res.status(201).json({ message: "🎉 Booking successful!", booking: newBooking });
+      console.log("New Booking Received:", bookingDetails);
+      
+      // Send Email Notification
+      await sendNotification("tripguru.agency@gmail.com", bookingDetails);
+
+      res.json({ message: "Booking successful and email sent!", bookingDetails });
   } catch (error) {
-    res.status(500).json({ error: "Internal Server Error" });
-  }
-});
-app.get("/bookings", async (req, res) => {
-  try {
-      const bookings = await Booking.find();
-      res.status(200).json(bookings);
-  } catch (error) {
-      res.status(500).json({ error: "Failed to fetch bookings" });
+      console.error("Booking error:", error);
+      res.status(500).json({ message: "Internal Server Error" });
   }
 });
 
-app.post("/send-notification", async (req, res) => {
-  const { adminEmail, bookingDetails } = req.body;
-
+// Email Notification Function
+async function sendNotification(adminEmail, bookingDetails) {
   let transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
-          user: "mkrajput8808@gmail.com",
-          pass: "tuzvumbizncqfiha" 
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
       }
   });
 
   let mailOptions = {
-      from: "mkrajput8808@gmail.com",
+      from: process.env.EMAIL_USER,
       to: adminEmail,
       subject: "New Trip Booking Notification",
       text: `A new booking has been made:
@@ -228,14 +224,9 @@ app.post("/send-notification", async (req, res) => {
       Please review the booking details.`
   };
 
-  try {
-      await transporter.sendMail(mailOptions);
-      res.json({ message: "Notification email sent successfully!" });
-  } catch (error) {
-      console.error("Error sending email:", error);
-      res.status(500).json({ message: "Failed to send email" });
-  }
-});
+  await transporter.sendMail(mailOptions);
+  console.log("Email notification sent successfully!");
+}
 
 // Get All Bookings
 app.get("/bookings", async (req, res) => {
