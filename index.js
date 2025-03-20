@@ -201,12 +201,13 @@ app.get("/bookings", async (req, res) => {
 });
 
 
+
 app.post("/send-notification", async (req, res) => {
     try {
-        const { adminEmail, bookingDetails } = req.body;
+        const { bookingDetails } = req.body;
         
-        if (!adminEmail || !bookingDetails) {
-            return res.status(400).json({ message: "Missing required fields" });
+        if (!bookingDetails) {
+            return res.status(400).json({ message: "Missing booking details" });
         }
 
         let transporter = nodemailer.createTransport({
@@ -219,7 +220,7 @@ app.post("/send-notification", async (req, res) => {
 
         let mailOptions = {
             from: "mkrajput8808@gmail.com",
-            to: adminEmail,
+            to: "mayankjariyaa@gmail.com", // Set default admin email
             subject: "New Trip Booking Notification",
             text: `A new booking has been made:\n
             Trip Type: ${bookingDetails.tripType}
@@ -240,7 +241,11 @@ app.post("/send-notification", async (req, res) => {
         console.error("Email Sending Error: ", error);
         res.status(500).json({ message: "Failed to send email", error: error.message });
     }
-});// Get All Bookings
+});
+
+
+
+// Get All Bookings
 app.get("/bookings", async (req, res) => {
   try {
     const bookings = await Booking.find();
