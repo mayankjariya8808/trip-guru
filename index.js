@@ -91,7 +91,7 @@ async function sendBookingEmail(bookingData) {
   });
 
   let mailOptions = {
-      from: "your-email@gmail.com",
+      from: "mkrajput8808@gmail.com",
       to: "mayankjariyaa@gmail.com",
       subject: "New Package Booking Confirmation",
       text: `
@@ -212,7 +212,7 @@ app.post("/send-notification", async (req, res) => {
   });
 
   let mailOptions = {
-      from: "your-email@gmail.com",
+      from: "mkrajput8808@gmail.com",
       to: adminEmail,
       subject: "New Trip Booking Notification",
       text: `A new booking has been made:
