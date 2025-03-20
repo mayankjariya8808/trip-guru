@@ -87,14 +87,14 @@ async function sendBookingEmail(bookingData) {
   let transporter = nodemailer.createTransport({
       service: "Gmail",
       auth: {
-          user: "mkrajput8808@gmail.com",  // Replace with your email
-          pass: "tuzvumbizncqfiha"         // Replace with your email password
+          user: "mssolution.it@gmail.com",  // Replace with your email
+          pass: "etwbiltvntdxtuel"         // Replace with your email password
       }
   });
 
   let mailOptions = {
-      from: "mkrajput8808@gmail.com",
-      to: "mayankjariyaa@gmail.com",
+      from: "mssolution.it@gmail.com",
+      to: "tripguru.agency@gmail.com",
       subject: "New Package Booking Confirmation",
       text: `
           New package booking received:
@@ -213,15 +213,15 @@ app.post("/send-notification", async (req, res) => {
         const transporter = nodemailer.createTransport({
             service: "gmail",
             auth: {
-                user: "mkrajput8808@gmail.com",  // ✅ Your Email
-                pass: "tuzvumbizncqfiha"        // ❌ WARNING: Use environment variables instead!
+                user: "mssolution.it@gmail.com",  // ✅ Your Email
+                pass: "etwbiltvntdxtuel"        // ❌ WARNING: Use environment variables instead!
             }
         });
 
         // ✅ Email Content
         const mailOptions = {
-            from: "mkrajput8808@gmail.com",  // ✅ Your Email
-            to: "mayankjariyaa@gmail.com",   // ✅ Recipient Email
+            from: "mssolution.it@gmail.com",  // ✅ Your Email
+            to: "tripguru.agency@gmail.com",   // ✅ Recipient Email
             subject: "New Trip Booking Notification",
             text: `
             A new booking has been made:
