@@ -191,7 +191,14 @@ app.post("/book", async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
-
+app.get("/bookings", async (req, res) => {
+  try {
+      const bookings = await Booking.find();
+      res.status(200).json(bookings);
+  } catch (error) {
+      res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
 
 app.post("/send-notification", async (req, res) => {
   const { adminEmail, bookingDetails } = req.body;
