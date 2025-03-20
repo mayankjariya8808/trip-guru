@@ -8,6 +8,8 @@ const morgan = require("morgan");
 const path = require("path");
 const fs = require("fs");
 const puppeteer = require("puppeteer");
+const nodemailer = require("nodemailer");
+
 
 const app = express();
 const PORT = process.env.PORT || 5500 ;
